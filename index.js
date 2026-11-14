@@ -9,57 +9,88 @@ app.use(express.json());
 app.use(cors());
 
 const sql = mysql2.createPool({
-host: process.env.HOST_BANCO,
-user: process.env.USUARIO_BANCO,
- password: process.env.SENHA_BANCO,
-  database: process.env.NOME_BANCO
+    host: process.env.HOST_BANCO,
+    user: process.env.USUARIO_BANCO,
+    password: process.env.SENHA_BANCO,
+    database: process.env.NOME_BANCO
 });
 
 app.get("/", (request, response) => {
- const comandoSelect = "SELECT * FROM musicas_LuanFerreira";
+    const comandoSelect = "SELECT * FROM musicas_LuanFerreira";
 
- sql.query(comandoSelect, (error, data) => {
- if (error) {
- console.log(error);
-return;
- }
+    sql.query(comandoSelect, (error, data) => {
+        if (error) {
+            console.log(error);
+            return;
+        }
 
- response.json(data);
- });
+        response.json(data);
+    });
+});
+
+app.get("/musica/:id", (request, response) => {
+    const { id } = request.params;
+
+    const comandoSelect = "SELECT * FROM musicas_LuanFerreira WHERE id = ?";
+
+    sql.query(comandoSelect, [id], (error, data) => {
+        if (error) {
+            console.log(error);
+            return;
+        }
+
+        response.json(data[0]);
+    });
 });
 
 app.post("/cadastrar", (request, response) => {
- const { titulo, artista, genero, ano, duracao } = request.body;
+    const { titulo, artista, genero, ano, duracao } = request.body;
 
- const comandoInsert = "INSERT INTO musicas_LuanFerreira(titulo, artista, genero, ano, duracao) VALUES (?, ?, ?, ?, ?)";
+    const comandoInsert = "INSERT INTO musicas_LuanFerreira(titulo, artista, genero, ano, duracao) VALUES (?, ?, ?, ?, ?)";
 
-sql.query(comandoInsert, [titulo, artista, genero, ano, duracao], (error) => {
- if (error) {
- console.log(error);
- return;
-}
+    sql.query(comandoInsert, [titulo, artista, genero, ano, duracao], (error) => {
+        if (error) {
+            console.log(error);
+            return;
+        }
 
- response.status(201).json({ mensagem: "Música cadastrada com sucesso!" });
- });
+        response.status(201).json({ mensagem: "Música cadastrada com sucesso!" });
+    });
+});
+
+app.put("/editar/:id", (request, response) => {
+    const { id } = request.params;
+    const { titulo, artista, genero, ano, duracao } = request.body;
+
+    const comandoUpdate = "UPDATE musicas_LuanFerreira SET titulo = ?, artista = ?, genero = ?, ano = ?, duracao = ? WHERE id = ?";
+
+    sql.query(comandoUpdate, [titulo, artista, genero, ano, duracao, id], (error) => {
+        if (error) {
+            console.log(error);
+            return;
+        }
+
+        response.json({ mensagem: "Música alterada com sucesso!" });
+    });
 });
 
 app.delete("/apagar/:id", (request, response) => {
- const { id } = request.params;
+    const { id } = request.params;
 
- const comandoDelete = "DELETE FROM musicas_LuanFerreira WHERE id = ?";
+    const comandoDelete = "DELETE FROM musicas_LuanFerreira WHERE id = ?";
 
-sql.query(comandoDelete, [id], (error) => {
-if (error) {
-console.log(error);
- return;
-}
+    sql.query(comandoDelete, [id], (error) => {
+        if (error) {
+            console.log(error);
+            return;
+        }
 
- response.json({ mensagem: "Música apagada com sucesso!" });
- });
+        response.json({ mensagem: "Música apagada com sucesso!" });
+    });
 });
 
 app.listen(3000, () => {
- console.log("Servidor online");
+    console.log("Servidor online");
 });
 
-export default app
+export default app;
